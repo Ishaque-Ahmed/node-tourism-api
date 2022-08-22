@@ -1,5 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -8,18 +13,62 @@ const userRouter = require('./routes/UserRoutes');
 
 const app = express();
 
-// Middlewares
+//  Global Middlewares
 // console.log(process.env.NODE_ENV);
+
+// Development Logging
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
+    console.log('Development in Progress :)');
 } else {
-    console.log('production');
+    console.log('Production :');
 }
-app.use(express.json());
+// Set security HTTP
+app.use(helmet());
+
+// Limit Requests from API
+const limiter = rateLimit({
+    max: 3,
+    windowMs: 60 * 60 * 1000,
+    message: 'Too many requests from this ip, try again in an hour',
+});
+
+app.use('/api', limiter);
+
+// Body parser -> Reading data from body into req.body
+app.use(
+    express.json({
+        limit: '10kb',
+    })
+);
+
+// Data Sanitization against NOSQL query injections
+app.use(mongoSanitize()); // Filters out $ and . signs in body and params
+
+// Data sanitization against XSS
+app.use(xss()); // Clean malicious code from html
+
+// Prevent Parameter Pollution
+app.use(
+    hpp({
+        whitelist: [
+            'duration',
+            'ratingsAverage',
+            'ratingsQuantity',
+            'maxGroupSize',
+            'price',
+            'difficulty',
+        ],
+    })
+);
+
+// Serving Static Files
 app.use(express.static(`${__dirname}/public`));
 
-app.use((res, req, next) => {
+// For Testing
+app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
+    // console.log(req.headers);
     next();
 });
 
