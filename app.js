@@ -10,6 +10,7 @@ const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/TourRoutes');
 const userRouter = require('./routes/UserRoutes');
+const reviewRouter = require('./routes/ReviewRoutes');
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.use(helmet());
 
 // Limit Requests from API
 const limiter = rateLimit({
-    max: 3,
+    max: 100,
     windowMs: 60 * 60 * 1000,
     message: 'Too many requests from this ip, try again in an hour',
 });
@@ -76,6 +77,7 @@ app.use((req, res, next) => {
 
 app.use(`/api/v1/tours`, tourRouter);
 app.use(`/api/v1/users`, userRouter);
+app.use(`/api/v1/reviews`, reviewRouter);
 
 //handling routing errors
 app.all('*', (req, res, next) => {

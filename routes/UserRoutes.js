@@ -8,6 +8,7 @@ const {
     deleteUser,
     updateMe,
     deleteMe,
+    getMe,
 } = require('../controllers/UserController');
 const {
     signUp,
@@ -16,6 +17,7 @@ const {
     resetPassword,
     updatePassword,
     protects,
+    restrictTo,
 } = require('../controllers/authenticationController');
 
 const Router = express.Router();
@@ -26,10 +28,19 @@ Router.post('/login', login);
 Router.post('/forgotPassword', forgotPassword);
 Router.patch('/resetPassword/:token', resetPassword);
 
-Router.patch('/updateMyPassword', protects, updatePassword);
+// Everyone should be be logged in: Protect All routes
 
-Router.patch('/updateMe', protects, updateMe);
-Router.delete('/deleteMe', protects, deleteMe);
+Router.use(protects);
+
+Router.patch('/updateMyPassword', updatePassword);
+
+Router.get('/me', getMe, getUser);
+Router.patch('/updateMe', updateMe);
+Router.delete('/deleteMe', deleteMe);
+
+// Only Admin has access to the following Routes
+
+Router.use(restrictTo('admin'));
 
 Router.route(`/`).get(getAllUsers).post(createUser);
 Router.route(`/:id`).get(getUser).patch(updateUser).delete(deleteUser);
