@@ -26,7 +26,7 @@ const createAndSendToken = (user, statusCode, res) => {
     res.cookie('jwt', token, cookieOptions);
     user.password = undefined;
     res.status(statusCode).json({
-        status: 'Success',
+        status: 'success',
         token,
         data: {
             user,
@@ -75,6 +75,14 @@ exports.login = catchAsync(async (req, res, next) => {
     createAndSendToken(user, 200, res);
 });
 
+exports.logout = (req, res) => {
+    res.cookie('jwt', 'logging out', {
+        expires: new Date(Date.now() + 10 * 1000),
+        httpOnly: true,
+    });
+    res.status(200).json({ status: 'success' });
+};
+
 exports.protects = catchAsync(async (req, res, next) => {
     // 1) Getting Token and see if it exists
 
@@ -84,6 +92,8 @@ exports.protects = catchAsync(async (req, res, next) => {
         req.headers.authorization.startsWith('Bearer')
     ) {
         token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.jwt) {
+        token = req.cookies.jwt;
     }
     // console.log(token);
     if (!token)
@@ -120,6 +130,7 @@ exports.protects = catchAsync(async (req, res, next) => {
 
     // Grant access;
     req.user = currentUser;
+    res.locals.user = currentUser;
     next();
 });
 exports.restrictTo = (...roles) => {
@@ -157,7 +168,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
             message,
         });
         res.status(200).json({
-            status: 'Success',
+            status: 'success',
             message: 'Token send to the email',
         });
     } catch (err) {
@@ -227,3 +238,31 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     // 4) Log the user in with new password send JWT
     createAndSendToken(user, 200, res);
 });
+
+// Only for rendering pages // Rendered pages
+exports.isLoggedin = async (req, res, next) => {
+    try {
+        // 1) Getting Token and see if it exists
+        if (req.cookies.jwt) {
+            const decoded = await jwt.verify(
+                req.cookies.jwt,
+                process.env.JWT_SECRET
+            );
+            // 3) Whether User Exists
+            const currentUser = await User.findById(decoded.id);
+            if (!currentUser) return next();
+
+            // 4) Check if User has changed passwords after getting token
+            if (currentUser.changedPasswordAfter(decoded.iat)) {
+                return next();
+            }
+
+            // Logged in User;
+            res.locals.user = currentUser;
+            return next();
+        }
+    } catch (err) {
+        return next();
+    }
+    next();
+};

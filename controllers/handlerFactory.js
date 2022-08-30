@@ -61,7 +61,7 @@ exports.getOne = (Model, popOptions) =>
         }
 
         res.status(200).json({
-            status: 'Success',
+            status: 'success',
             data: {
                 data: document,
             },
@@ -84,7 +84,7 @@ exports.getAll = (Model) =>
 
         //Send Response
         res.status(200).json({
-            status: 'Success',
+            status: 'success',
             results: documents.length,
             data: {
                 data: documents,

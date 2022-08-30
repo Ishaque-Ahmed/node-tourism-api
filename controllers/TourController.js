@@ -1,8 +1,66 @@
 const Tour = require('../models/tourModel');
+const multer = require('multer');
+const sharp = require('sharp');
 // const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
+
+const multerStorage = multer.memoryStorage();
+const multerFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image')) {
+        cb(null, true);
+    } else
+        cb(new AppError('Not an image, please upload only images', 400), false);
+};
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter,
+});
+
+exports.uploadTourimages = upload.fields([
+    {
+        name: 'imageCover',
+        maxCount: 1,
+    },
+    {
+        name: 'images',
+        maxCount: 3,
+    },
+]);
+// upload.single('imageCover');
+// upload.array('images', 3);
+
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+    if (!req.files.imageCover || !req.files.images) next();
+    // 1) CoverImage
+    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+    await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${req.body.imageCover}`);
+
+    // 2) Images
+    req.body.images = [];
+
+    await Promise.all(
+        req.files.images.map(async (file, i) => {
+            const fileName = `tour-${req.params.id}-${Date.now()}-${
+                i + 1
+            }.jpeg`;
+            await sharp(file.buffer)
+                .resize(2000, 1333)
+                .toFormat('jpeg')
+                .jpeg({ quality: 90 })
+                .toFile(`public/img/tours/${fileName}`);
+
+            req.body.images.push(fileName);
+        })
+    );
+
+    next();
+});
 
 exports.aliasTopTours = (req, res, next) => {
     req.query.limit = '5';
@@ -62,7 +120,7 @@ exports.getTourStats = catchAsync(async (req, res, next) => {
         // }
     ]);
     res.status(200).json({
-        status: 'Success',
+        status: 'success',
         data: {
             stats,
         },
@@ -104,7 +162,7 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
         },
     ]);
     res.status(200).json({
-        status: 'Success Monthly Plan',
+        status: 'success',
         data: {
             plan,
         },

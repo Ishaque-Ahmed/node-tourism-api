@@ -9,6 +9,8 @@ const {
     updateMe,
     deleteMe,
     getMe,
+    uploadUserPhoto,
+    resizeUserPhoto,
 } = require('../controllers/UserController');
 const {
     signUp,
@@ -18,12 +20,14 @@ const {
     updatePassword,
     protects,
     restrictTo,
+    logout,
 } = require('../controllers/authenticationController');
 
 const Router = express.Router();
 
 Router.post('/signup', signUp);
 Router.post('/login', login);
+Router.get('/logout', logout);
 
 Router.post('/forgotPassword', forgotPassword);
 Router.patch('/resetPassword/:token', resetPassword);
@@ -35,7 +39,7 @@ Router.use(protects);
 Router.patch('/updateMyPassword', updatePassword);
 
 Router.get('/me', getMe, getUser);
-Router.patch('/updateMe', updateMe);
+Router.patch('/updateMe', uploadUserPhoto, resizeUserPhoto, updateMe);
 Router.delete('/deleteMe', deleteMe);
 
 // Only Admin has access to the following Routes
