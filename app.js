@@ -38,7 +38,7 @@ app.use(
 );
 */
 
-app.options('*'.cors());
+app.options('*', cors());
 // app.options('/api/v1/tours/:id'.cors());
 
 // Serving Static Files
