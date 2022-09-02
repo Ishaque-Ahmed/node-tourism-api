@@ -14,6 +14,7 @@ const tourRouter = require('./routes/TourRoutes');
 const userRouter = require('./routes/UserRoutes');
 const reviewRouter = require('./routes/ReviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
+const bookingRouter = require('./routes/BookingRoutes');
 
 const app = express();
 
@@ -38,11 +39,21 @@ if (process.env.NODE_ENV === 'development') {
 
 // Set security HTTP
 // app.use(helmet());
-const scriptSrcUrls = ['https://unpkg.com/', 'https://tile.openstreetmap.org'];
+const scriptSrcUrls = [
+    'https://unpkg.com/',
+    'https://tile.openstreetmap.org',
+    'https://*.cloudflare.com',
+    'https://js.stripe.com/v3/',
+    'https://checkout.stripe.com',
+];
 const styleSrcUrls = [
     'https://unpkg.com/',
     'https://tile.openstreetmap.org',
     'https://fonts.googleapis.com/',
+    'https://*.cloudflare.com',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:52191',
+    '*.stripe.com',
 ];
 const connectSrcUrls = ['https://unpkg.com', 'https://tile.openstreetmap.org'];
 const fontSrcUrls = ['fonts.googleapis.com', 'fonts.gstatic.com'];
@@ -58,6 +69,7 @@ app.use(
             objectSrc: [],
             imgSrc: ["'self'", 'blob:', 'data:', 'https:'],
             fontSrc: ["'self'", ...fontSrcUrls],
+            frameSrc: ['*.stripe.com', '*.stripe.network'],
         },
     })
 );
@@ -117,6 +129,7 @@ app.use('/', viewRouter);
 app.use(`/api/v1/tours`, tourRouter);
 app.use(`/api/v1/users`, userRouter);
 app.use(`/api/v1/reviews`, reviewRouter);
+app.use(`/api/v1/bookings`, bookingRouter);
 
 //handling routing errors
 app.all('*', (req, res, next) => {
