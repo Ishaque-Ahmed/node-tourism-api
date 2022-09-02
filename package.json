@@ -8,7 +8,8 @@
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start:dev": "nodemon server.js",
+        "start": "node server.js",
+        "dev": "nodemon server.js",
         "start:prod": "NODE_ENV=production nodemon server.js",
         "debug": "ndb server.js",
         "build:js": "parcel build ./public/js/index.js --dist-dir ./public/js/bundled"
@@ -44,5 +45,8 @@
         "buffer": "^6.0.3",
         "parcel": "^2.7.0",
         "process": "^0.11.10"
+    },
+    "engines": {
+        "node": ">=16.0.0"
     }
 }
