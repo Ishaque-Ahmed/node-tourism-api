@@ -18,7 +18,7 @@ const router = express.Router();
 
 // router.use(isLoggedin);
 
-router.get('/', createBookingCheckout, isLoggedin, getOverview);
+router.get('/', isLoggedin, getOverview);
 
 router.get('/tour/:slug', isLoggedin, getTour);
 
