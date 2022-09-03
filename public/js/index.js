@@ -3,7 +3,7 @@ import { login, logout } from './login';
 import { displayMap } from './leaflet';
 import { updateSettins } from './updateSettings';
 import { bookTour } from './stripe';
-import { showAlert } from './alerts';
+// import { showAlert } from './alerts';
 
 // DOM Elements
 const leaflet = document.getElementById('map');
@@ -67,7 +67,7 @@ if (bookBtn)
         bookTour(tourId);
     });
 
-const alertMsg = document.querySelector('body').dataset.alert;
-if (alertMsg) {
-    showAlert('success', alertMsg, 5);
-}
+// const alertMsg = document.querySelector('body').dataset.alert;
+// if (alertMsg) {
+//     showAlert('success', alertMsg, 5);
+// }

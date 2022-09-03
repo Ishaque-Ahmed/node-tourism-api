@@ -6,7 +6,6 @@ const {
     getAccount,
     updateUserData,
     getMyTours,
-    alerts,
 } = require('../controllers/viewController');
 const {
     protects,
@@ -18,8 +17,6 @@ const { createBookingCheckout } = require('../controllers/bookingController');
 const router = express.Router();
 
 // router.use(isLoggedin);
-
-router.use(alerts);
 
 router.get('/', isLoggedin, getOverview);
 
